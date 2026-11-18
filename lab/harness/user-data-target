@@ -1,0 +1,27 @@
+#cloud-config
+hostname: cve-target
+manage_etc_hosts: true
+ssh_pwauth: true
+disable_root: true
+package_update: false
+package_upgrade: false
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: sudo
+    shell: /bin/bash
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ssh-ed25519 <YOUR_PUBLIC_KEY> ubuntu@lab
+growpart:
+  mode: auto
+  devices: ['/']
+resize_rootfs: true
+write_files:
+  # Do not let network-online.target block boot on the unconfigured lab NIC.
+  - path: /etc/systemd/system/systemd-networkd-wait-online.service.d/99-cve-lab.conf
+    permissions: '0644'
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=/bin/true
